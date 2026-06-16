@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>EMERGENCY BROADCAST SYSTEM</title>
+<style>
+  :root { --purr: #b14eff; }
+  * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
+  html, body { margin: 0; padding: 0; background: #000; min-height: 100%; }
+  body {
+    font-family: "Courier New", ui-monospace, monospace;
+    color: #36ff6b;
+    padding: 18px 16px 60px;
+    line-height: 1.5;
+    overflow-x: hidden;
+    text-shadow: 0 0 6px rgba(54,255,107,.55);
+  }
+  /* scanline flicker overlay */
+  body::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 9;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,.25) 3px, rgba(0,0,0,0) 4px);
+    animation: flick 6s infinite;
+  }
+  @keyframes flick { 0%,97%,100%{opacity:.5} 98%{opacity:.15} 99%{opacity:.7} }
+  .banner {
+    text-align: center; font-weight: bold; letter-spacing: 1px;
+    color: #ff3b3b; text-shadow: 0 0 10px rgba(255,59,59,.8);
+    border: 2px solid #ff3b3b; padding: 10px 6px; margin-bottom: 18px;
+    animation: alarm 1.1s steps(1) infinite;
+  }
+  @keyframes alarm { 50% { color:#ffb3b3; border-color:#ffb3b3; } }
+  h2 { font-size: 1em; margin: 22px 0 8px; color:#9bff9b; }
+  p { margin: 6px 0; }
+  .bar {
+    font-weight: bold; letter-spacing: 2px; color: var(--purr);
+    text-shadow: 0 0 10px var(--purr); word-break: break-all;
+  }
+  .threat {
+    font-weight: bold; color: var(--purr); text-shadow: 0 0 14px var(--purr);
+    animation: pulse 1.3s ease-in-out infinite;
+  }
+  @keyframes pulse { 50% { opacity:.45 } }
+  ul { list-style: none; padding-left: 0; margin: 6px 0; }
+  li { margin: 4px 0; }
+  .ok { color: #36ff6b; }
+  .warn { color: #ffd24a; text-shadow: 0 0 6px rgba(255,210,74,.5); }
+  hr { border: none; border-top: 1px dashed #2a6; margin: 22px 0; }
+  .agency { text-align: center; color:#9bff9b; }
+  .quote { text-align: center; font-style: italic; color:#7ad17a; }
+  .end { text-align: center; margin-top: 18px; color:#9bff9b; }
+  .cursor::after { content:"_"; animation: blink 1s steps(1) infinite; }
+  @keyframes blink { 50% { opacity:0 } }
+</style>
+</head>
+<body>
+  <div class="banner">*** EMERGENCY BROADCAST SYSTEM ***</div>
+
+  <p><strong>This is not a drill.</strong></p>
+  <p>A highly sophisticated cyber-cat has gained access to this device.</p>
+
+  <h2>Current Status:</h2>
+  <p class="bar">████████████████████ 100%</p>
+
+  <p class="threat">Threat Level: PURRPLE 🟣</p>
+
+  <h2>Required Actions:</h2>
+  <ul>
+    <li class="ok">✓ Stay calm.</li>
+    <li class="ok">✓ Provide treats.</li>
+    <li class="ok">✓ Accept your new feline overlords.</li>
+  </ul>
+
+  <h2>Failure to comply may result in:</h2>
+  <ul>
+    <li class="warn">• Excessive purring</li>
+    <li class="warn">• Random keyboard naps</li>
+    <li class="warn">• Hair on black clothing</li>
+    <li class="warn">• 3 A.M. zoomies</li>
+    <li class="warn">• Occupied laptop keyboards</li>
+  </ul>
+
+  <hr>
+
+  <p class="agency"><strong>INTERNATIONAL FELINE SECURITY AGENCY</strong><br>(IFSA)</p>
+  <p class="agency">Official Advisory #CAT-404</p>
+  <p class="quote">"Protecting humans from empty food bowls since 9,500 BC."</p>
+
+  <p class="end cursor">🐾 End of transmission.</p>
+</body>
+</html>
