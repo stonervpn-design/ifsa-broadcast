@@ -5,88 +5,338 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>EMERGENCY BROADCAST SYSTEM</title>
 <style>
-  :root { --purr: #b14eff; }
+  :root { --purr: #b14eff; --grn: #36ff6b; }
   * { box-sizing: border-box; -webkit-user-select: none; user-select: none; }
   html, body { margin: 0; padding: 0; background: #000; min-height: 100%; }
   body {
     font-family: "Courier New", ui-monospace, monospace;
-    color: #36ff6b;
-    padding: 18px 16px 60px;
+    color: var(--grn);
+    padding: 18px 16px 72px;
     line-height: 1.5;
     overflow-x: hidden;
     text-shadow: 0 0 6px rgba(54,255,107,.55);
   }
-  /* scanline flicker overlay */
-  body::after {
-    content: "";
-    position: fixed; inset: 0; pointer-events: none; z-index: 9;
-    background: repeating-linear-gradient(0deg, rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,.25) 3px, rgba(0,0,0,0) 4px);
-    animation: flick 6s infinite;
+
+  /* layers */
+  #rain { position: fixed; inset: 0; z-index: 0; opacity: .32; pointer-events: none; }
+  #paws { position: fixed; inset: 0; z-index: 1; pointer-events: none; overflow: hidden; }
+  .paw {
+    position: absolute; bottom: -40px; font-size: 22px; opacity: 0;
+    will-change: transform, opacity; animation: floatUp linear forwards;
   }
-  @keyframes flick { 0%,97%,100%{opacity:.5} 98%{opacity:.15} 99%{opacity:.7} }
+  @keyframes floatUp {
+    0%{opacity:0;transform:translateY(0) rotate(0) scale(.7)}
+    12%{opacity:.8} 100%{opacity:0;transform:translateY(-105vh) rotate(220deg) scale(1.1)}
+  }
+  .wrap { position: relative; z-index: 5; }
+
+  /* red horror vignette */
+  #vignette {
+    position: fixed; inset: 0; z-index: 8; pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 42%, rgba(150,0,0,.55) 100%);
+    opacity: 0; animation: vig 3.6s ease-in-out infinite;
+  }
+  @keyframes vig { 50% { opacity: .85; } }
+
+  /* scanlines */
+  body::after {
+    content:""; position: fixed; inset: 0; pointer-events: none; z-index: 9;
+    background: repeating-linear-gradient(0deg,
+      rgba(0,0,0,0) 0, rgba(0,0,0,0) 2px, rgba(0,0,0,.28) 3px, rgba(0,0,0,0) 4px);
+    animation: flick 6s infinite, roll 8s linear infinite;
+  }
+  @keyframes flick { 0%,97%,100%{opacity:.55} 98%{opacity:.15} 99%{opacity:.8} }
+  @keyframes roll  { from{background-position:0 0} to{background-position:0 100px} }
+
+  /* scare takeover overlay */
+  #scare {
+    position: fixed; inset: 0; z-index: 12; background: #000;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    padding: 24px; transition: opacity .6s ease;
+  }
+  #scare.flash { background: #5a0000; }
+  #scareText {
+    font-size: 1.35em; color: var(--grn); max-width: 640px; white-space: pre-wrap;
+    text-shadow: 0 0 10px rgba(54,255,107,.6);
+  }
+  #scareText .red { color:#ff2b2b; text-shadow: 0 0 16px #ff0000; }
+  #scareText .big { display:block; font-size: 2.3em; font-weight: bold; margin-top: 10px; letter-spacing: 1px; }
+  #scareText .tc::after { content:"\2588"; animation: blink 1s steps(1) infinite; }
+
   .banner {
     text-align: center; font-weight: bold; letter-spacing: 1px;
     color: #ff3b3b; text-shadow: 0 0 10px rgba(255,59,59,.8);
-    border: 2px solid #ff3b3b; padding: 10px 6px; margin-bottom: 18px;
+    border: 2px solid #ff3b3b; padding: 10px 6px; margin-bottom: 16px;
     animation: alarm 1.1s steps(1) infinite;
   }
   @keyframes alarm { 50% { color:#ffb3b3; border-color:#ffb3b3; } }
-  h2 { font-size: 1em; margin: 22px 0 8px; color:#9bff9b; }
-  p { margin: 6px 0; }
-  .bar {
-    font-weight: bold; letter-spacing: 2px; color: var(--purr);
-    text-shadow: 0 0 10px var(--purr); word-break: break-all;
+  .banner.glitch {
+    animation: alarm 1.1s steps(1) infinite, shake .18s steps(2) 2;
+    text-shadow: -2px 0 #ff003c, 2px 0 #00e5ff, 0 0 10px rgba(255,59,59,.8);
   }
-  .threat {
-    font-weight: bold; color: var(--purr); text-shadow: 0 0 14px var(--purr);
-    animation: pulse 1.3s ease-in-out infinite;
+  @keyframes shake {
+    0%{transform:translate(0,0)} 25%{transform:translate(-2px,1px)}
+    50%{transform:translate(2px,-1px)} 75%{transform:translate(-1px,-1px)} 100%{transform:translate(0,0)}
   }
+
+  #term {
+    border: 1px solid rgba(54,255,107,.5); background: rgba(0,18,6,.55);
+    border-radius: 3px; padding: 8px 10px 10px; margin-bottom: 18px;
+    box-shadow: inset 0 0 22px rgba(54,255,107,.12), 0 0 14px rgba(54,255,107,.12);
+  }
+  #term .hdr {
+    display:flex; justify-content:space-between; gap:8px; font-size:.72em; color:#9bff9b;
+    border-bottom:1px dashed #2a6; padding-bottom:5px; margin-bottom:7px; letter-spacing:.5px;
+  }
+  #term .hdr .dot { color:#ff3b3b; }
+  #termBody {
+    height: 232px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+    font-size: .86em; line-height: 1.45; scrollbar-width: none;
+  }
+  #termBody::-webkit-scrollbar { display:none; }
+  #termBody .hl{color:#d7ffe3;text-shadow:0 0 9px var(--grn)} #termBody .warn{color:#ffd24a}
+  #termBody .red{color:#ff4b4b;text-shadow:0 0 9px #ff0000} #termBody .bar{color:var(--purr);text-shadow:0 0 8px var(--purr)}
+  #termBody .tc::after{content:"\2588";animation:blink 1s steps(1) infinite}
+
+  h2 { font-size:1em; margin:20px 0 8px; color:#9bff9b; }
+  p { margin:6px 0; }
+  .threat { font-weight:bold; color:var(--purr); text-shadow:0 0 14px var(--purr); animation:pulse 1.3s ease-in-out infinite; }
   @keyframes pulse { 50% { opacity:.45 } }
-  ul { list-style: none; padding-left: 0; margin: 6px 0; }
-  li { margin: 4px 0; }
-  .ok { color: #36ff6b; }
-  .warn { color: #ffd24a; text-shadow: 0 0 6px rgba(255,210,74,.5); }
-  hr { border: none; border-top: 1px dashed #2a6; margin: 22px 0; }
-  .agency { text-align: center; color:#9bff9b; }
-  .quote { text-align: center; font-style: italic; color:#7ad17a; }
-  .end { text-align: center; margin-top: 18px; color:#9bff9b; }
-  .cursor::after { content:"_"; animation: blink 1s steps(1) infinite; }
+  ul { list-style:none; padding-left:0; margin:6px 0; } li { margin:4px 0; }
+  .ok{color:var(--grn)} .warn{color:#ffd24a;text-shadow:0 0 6px rgba(255,210,74,.5)}
+  hr{border:none;border-top:1px dashed #2a6;margin:20px 0}
+  .agency{text-align:center;color:#9bff9b} .quote{text-align:center;font-style:italic;color:#7ad17a}
+  .end{text-align:center;margin-top:18px;color:#9bff9b}
+  .cursor::after{content:"_";animation:blink 1s steps(1) infinite}
   @keyframes blink { 50% { opacity:0 } }
+
+  #march {
+    position: fixed; left:0; right:0; bottom:0; z-index:6; height:40px; overflow:hidden; white-space:nowrap;
+    background: linear-gradient(0deg, rgba(0,0,0,.85), rgba(0,0,0,0)); border-top:1px solid rgba(54,255,107,.25);
+  }
+  #march .row{display:inline-block;padding-top:6px;font-size:24px;will-change:transform;animation:march 14s linear infinite}
+  @keyframes march{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+  body.shake{animation:pageshake .42s steps(2) 1}
+  @keyframes pageshake{0%{transform:translate(0,0)}20%{transform:translate(-3px,2px)}40%{transform:translate(3px,-2px)}60%{transform:translate(-2px,-2px)}80%{transform:translate(2px,2px)}100%{transform:translate(0,0)}}
+
+  /* calm + safe fallback: kills flashes, vibration handled in JS */
+  @media (prefers-reduced-motion: reduce) {
+    #rain,#paws,#march,#vignette,#scare{display:none!important}
+    body::after{animation:flick 6s infinite}
+    .banner,.threat{animation:none} #termBody{height:auto}
+  }
 </style>
 </head>
 <body>
-  <div class="banner">*** EMERGENCY BROADCAST SYSTEM ***</div>
+  <canvas id="rain"></canvas>
+  <div id="paws"></div>
+  <div id="vignette"></div>
 
-  <p><strong>This is not a drill.</strong></p>
-  <p>A highly sophisticated cyber-cat has gained access to this device.</p>
+  <div class="wrap">
+    <div class="banner" id="banner">*** EMERGENCY BROADCAST SYSTEM ***</div>
 
-  <h2>Current Status:</h2>
-  <p class="bar">████████████████████ 100%</p>
+    <p><strong>This is not a drill.</strong> A highly sophisticated cyber-cat is breaching this device:</p>
 
-  <p class="threat">Threat Level: PURRPLE 🟣</p>
+    <div id="term">
+      <div class="hdr"><span><span class="dot">●</span> SECURE SHELL :: UNAUTHORIZED SESSION</span><span>root@ifsa-c2</span></div>
+      <div id="termBody"></div>
+    </div>
 
-  <h2>Required Actions:</h2>
-  <ul>
-    <li class="ok">✓ Stay calm.</li>
-    <li class="ok">✓ Provide treats.</li>
-    <li class="ok">✓ Accept your new feline overlords.</li>
-  </ul>
+    <p class="threat">Threat Level: PURRPLE 🟣</p>
 
-  <h2>Failure to comply may result in:</h2>
-  <ul>
-    <li class="warn">• Excessive purring</li>
-    <li class="warn">• Random keyboard naps</li>
-    <li class="warn">• Hair on black clothing</li>
-    <li class="warn">• 3 A.M. zoomies</li>
-    <li class="warn">• Occupied laptop keyboards</li>
-  </ul>
+    <h2>Required Actions:</h2>
+    <ul>
+      <li class="ok">✓ Stay calm.</li>
+      <li class="ok">✓ Provide treats.</li>
+      <li class="ok">✓ Accept your new feline overlords.</li>
+    </ul>
 
-  <hr>
+    <h2>Failure to comply may result in:</h2>
+    <ul>
+      <li class="warn">• Excessive purring</li>
+      <li class="warn">• Random keyboard naps</li>
+      <li class="warn">• Hair on black clothing</li>
+      <li class="warn">• 3 A.M. zoomies</li>
+      <li class="warn">• Occupied laptop keyboards</li>
+    </ul>
 
-  <p class="agency"><strong>INTERNATIONAL FELINE SECURITY AGENCY</strong><br>(IFSA)</p>
-  <p class="agency">Official Advisory #CAT-404</p>
-  <p class="quote">"Protecting humans from empty food bowls since 9,500 BC."</p>
+    <hr>
 
-  <p class="end cursor">🐾 End of transmission.</p>
+    <p class="agency"><strong>INTERNATIONAL FELINE SECURITY AGENCY</strong><br>(IFSA)</p>
+    <p class="agency">Official Advisory #CAT-404</p>
+    <p class="quote">"Protecting humans from empty food bowls since 9,500 BC."</p>
+
+    <p class="end cursor">🐾 End of transmission.</p>
+  </div>
+
+  <div id="march"><span class="row" id="marchRow"></span></div>
+
+  <div id="scare"><div id="scareText"></div></div>
+
+<script>
+(function () {
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function rand(a,b){ return a + Math.floor(Math.random()*(b-a+1)); }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function vib(p){ try { if (navigator.vibrate) navigator.vibrate(p); } catch(e){} }
+
+  /* marching cats */
+  var cats = ["🐱","😼","🐈","🐾","😺","🙀","😾","🐈‍⬛"];
+  var row = document.getElementById("marchRow");
+  if (row){ var seq=""; for (var i=0;i<24;i++) seq+=cats[i%cats.length]+"   "; row.textContent = seq+seq; }
+
+  /* ---------- SCARE TAKEOVER ---------- */
+  var scare = document.getElementById("scare");
+  var st = document.getElementById("scareText");
+  async function flash(){ scare.classList.add("flash"); vib(40); await sleep(110); scare.classList.remove("flash"); await sleep(280); }
+  async function typeInto(text, cls){
+    var span=document.createElement("span"); if(cls) span.className=cls; st.appendChild(span);
+    for (var i=0;i<text.length;i++){ span.textContent+=text[i]; await sleep(rand(16,40)); }
+  }
+  function set(html){ st.innerHTML = html; }
+
+  async function runScare(){
+    vib(60);
+    set(""); await typeInto("> establishing remote session…\n"); await sleep(350);
+    await typeInto("> FRONT CAMERA  ● LIVE\n", "red"); await sleep(500);
+    await flash();
+    set('<span class="red big">I can see you.</span>'); vib([60,40,140]); await sleep(1300);
+    set('> accessing:  contacts ✓  photos ✓  mic ✓  location ✓'); await sleep(950);
+    set('<span class="red">TRACE COMPLETE — IDENTITY LOCKED</span>'); vib(90); await sleep(950);
+    for (var n=5;n>=1;n--){
+      set('<span class="red">SYSTEM WIPE IN</span><span class="red big">0:0'+n+'</span>');
+      vib(55); await sleep(760);
+    }
+    await flash(); await flash();
+    set('<span class="big">😼</span><span class="big red">…sike.</span>'); vib([0,220]); await sleep(1100);
+    set('<span class="big">it\'s just cats. 🐾</span>'); await sleep(1150);
+    scare.style.opacity = "0";
+    setTimeout(function(){ scare.style.display="none"; }, 650);
+  }
+
+  /* ---------- LIVE HACK TERMINAL ---------- */
+  var body = document.getElementById("termBody");
+  var steps = [
+    {s:"root@ifsa-c2:~# ./breach --target HUMAN_DEVICE"},
+    {s:"[*] enabling FRONT_CAMERA … ● live", cls:"red"},
+    {s:"[*] enabling MICROPHONE  … ● live", cls:"red"},
+    {s:"[*] recon: nmap -sS -p- 192.168.8.0/24"},
+    {s:"[+] 254 hosts up — locking onto HUMAN_LAPTOP"},
+    {b:"[*] bypassing litterbox firewall", ok:"BYPASSED"},
+    {b:"[*] cracking WPA2 \"treats2024\"", ok:"CRACKED"},
+    {s:"[+] ACCESS GRANTED", cls:"hl"},
+    {s:"[*] dumping /contacts … 1,204 entries", cls:"warn"},
+    {s:"[*] GPS lock acquired:  < YOU ARE HERE >", cls:"red"},
+    {s:"[*] sudo pet --force   # privilege escalation"},
+    {b:"[*] uploading payload hairball.bin", ok:"100%"},
+    {s:"[*] curl -s c2.purr/zoomies | sh"},
+    {s:"[!] WARNING: 3 A.M. zoomies armed", cls:"warn"},
+    {s:"[+] purr daemon started (PID 404)"},
+    {s:">> DEVICE COMPROMISED BY CYBER-CAT <<", cls:"hl"}
+  ];
+  var stopped = false;
+  function tscroll(){ body.scrollTop = body.scrollHeight; }
+  async function typeText(text, cls){
+    var span=document.createElement("span"); if(cls) span.className=cls; body.appendChild(span);
+    for (var i=0;i<text.length;i++){ if(stopped) return; span.textContent+=text[i]; tscroll(); await sleep(rand(6,18)); }
+    body.appendChild(document.createTextNode("\n")); tscroll();
+  }
+  async function typeBar(prefix, okTag){
+    var span=document.createElement("span"); body.appendChild(span);
+    for (var i=0;i<prefix.length;i++){ if(stopped) return; span.textContent+=prefix[i]; tscroll(); await sleep(rand(6,16)); }
+    span.textContent+=" ";
+    var bar=document.createElement("span"); bar.className="bar"; body.appendChild(bar);
+    var Wd=14;
+    for (var p=0;p<=100;){ if(stopped) return;
+      var f=Math.round(Wd*p/100); bar.textContent="["+"█".repeat(f)+" ".repeat(Wd-f)+"] "+p+"%"; tscroll();
+      await sleep(rand(35,100)); if(p===100) break; p=Math.min(100,p+rand(4,12)); }
+    var ok=document.createElement("span"); ok.className="hl"; ok.textContent="  ["+okTag+"]";
+    body.appendChild(ok); body.appendChild(document.createTextNode("\n")); tscroll();
+  }
+  async function runTerminal(){
+    if (reduce){
+      body.textContent = steps.map(function(x){ return x.b ? x.b+" [██████████████] ["+x.ok+"]" : x.s; }).join("\n")+"\n";
+      var c=document.createElement("span"); c.className="tc"; body.appendChild(c); return;
+    }
+    while (!stopped){
+      body.innerHTML="";
+      for (var i=0;i<steps.length;i++){ if(stopped) return;
+        var x=steps[i]; if(x.b) await typeBar(x.b,x.ok); else await typeText(x.s,x.cls);
+        await sleep(rand(110,300)); }
+      var cur=document.createElement("span"); cur.className="tc"; body.appendChild(cur); tscroll();
+      await sleep(3000);
+    }
+  }
+
+  /* ---------- reduced motion: no scare, static page ---------- */
+  if (reduce){ if (scare) scare.style.display="none"; runTerminal(); return; }
+
+  /* ---------- start everything ---------- */
+  runScare().then(runTerminal);
+
+  /* matrix cat rain (with watching eyes) */
+  var canvas=document.getElementById("rain"), ctx=canvas.getContext("2d");
+  var glyphs="アカサタナハマヤラワ0123456789ABCDEF$#%*+=".split("");
+  var rainCats=["🐱","😼","🐾","🐈","👁"];
+  var fontSize=16, cols=0, drops=[], W=0, H=0, dpr=1;
+  function resize(){
+    dpr=Math.min(window.devicePixelRatio||1,2);
+    W=canvas.clientWidth=window.innerWidth; H=canvas.clientHeight=window.innerHeight;
+    canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr); ctx.setTransform(dpr,0,0,dpr,0,0);
+    cols=Math.floor(W/fontSize); drops=new Array(cols);
+    for (var x=0;x<cols;x++) drops[x]=Math.random()*-50;
+    ctx.font=fontSize+"px monospace";
+  }
+  resize(); window.addEventListener("resize", resize);
+  var last=0, interval=1000/22, running=true;
+  function draw(now){
+    if(!running) return; requestAnimationFrame(draw);
+    if(now-last<interval) return; last=now;
+    ctx.fillStyle="rgba(0,0,0,0.10)"; ctx.fillRect(0,0,W,H);
+    for (var i=0;i<cols;i++){
+      var x=i*fontSize, y=drops[i]*fontSize;
+      if(Math.random()<0.012){ ctx.fillText(rainCats[(Math.random()*rainCats.length)|0], x, y); }
+      else { ctx.fillStyle=Math.random()<0.06?"#d7ffe3":"#36ff6b"; ctx.fillText(glyphs[(Math.random()*glyphs.length)|0], x, y); }
+      if(y>H && Math.random()>0.975) drops[i]=0; drops[i]++;
+    }
+  }
+  requestAnimationFrame(draw);
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden) running=false; else { running=true; last=0; requestAnimationFrame(draw); }
+  });
+
+  /* floating paws */
+  var pawLayer=document.getElementById("paws");
+  setInterval(function(){
+    if(document.hidden) return;
+    var p=document.createElement("span"); p.className="paw";
+    p.textContent=Math.random()<0.25?"🐱":"🐾";
+    p.style.left=(Math.random()*96)+"vw";
+    var dur=6+Math.random()*6; p.style.animationDuration=dur+"s";
+    p.style.fontSize=(16+Math.random()*16)+"px";
+    pawLayer.appendChild(p); setTimeout(function(){ p.remove(); }, dur*1000+200);
+  }, 1500);
+
+  /* creepy banner swaps + page shake */
+  var banner=document.getElementById("banner");
+  var BASE="*** EMERGENCY BROADCAST SYSTEM ***";
+  var creepy=["👁 I SEE YOU 👁","BEHIND YOU","DON'T BLINK","SMILE 😼","WE HAVE YOUR TREATS","LOOK UP"];
+  setInterval(function(){
+    if(document.hidden || !banner) return;
+    if(Math.random()<0.45){
+      banner.classList.add("glitch");
+      banner.textContent=creepy[(Math.random()*creepy.length)|0];
+      document.body.classList.add("shake"); vib([0,30,60,30]);
+      setTimeout(function(){
+        banner.classList.remove("glitch"); banner.textContent=BASE;
+        document.body.classList.remove("shake");
+      }, 1300);
+    } else {
+      banner.classList.add("glitch"); setTimeout(function(){ banner.classList.remove("glitch"); }, 340);
+    }
+  }, 4200);
+})();
+</script>
 </body>
 </html>
